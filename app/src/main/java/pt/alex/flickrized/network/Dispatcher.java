@@ -13,7 +13,9 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
+import pt.alex.flickrized.aplication.FlickApplication;
 import pt.alex.flickrized.data.User;
 
 /**
@@ -21,21 +23,21 @@ import pt.alex.flickrized.data.User;
  */
 public class Dispatcher {
 
-    private static final Handler MAIN_THREAD = new Handler(
-            Looper.getMainLooper());
 
 
+    private static final Handler MAIN_THREAD = new Handler();
 
-        public static void call(Runnable runnable){
+    private  Dispatcher() {
+    }
 
-            MAIN_THREAD.post(runnable);
-        }
 
 
     /**
      * feio
      * @param callback
      */
+
+
     public static  void getUserByUserName(final Callback callback){
             new Thread(new Runnable() {
                 @Override
@@ -43,13 +45,15 @@ public class Dispatcher {
                     try {
                         Flickr f = FlickrHelper.of().getFlickerAuthed();
                         com.googlecode.flickrjandroid.people.User byUsername = f.getPeopleInterface().findByUsername(User.DUMMY_USER); // usar um user ramdomU
-                        callback.onResponse(byUsername);
+                        uiSync(callback,byUsername,NeedSync.OK);
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (FlickrException e) {
                         e.printStackTrace();
+                        uiSync(callback,e,NeedSync.ERROR);
                     }
                 }
             }).start();
@@ -70,6 +74,7 @@ public class Dispatcher {
                     e.printStackTrace();
                 } catch (FlickrException e) {
                     e.printStackTrace();
+                    uiSync(callback,e,NeedSync.ERROR);
                 }
             }
         }).start();
@@ -84,56 +89,71 @@ public class Dispatcher {
                     Flickr f = FlickrHelper.of().getFlickerAuthed();
                     Photo info = f.getPhotosInterface().getInfo(photoId, null);
                     callback.onResponse(info);
+                    uiSync(callback,info,NeedSync.OK);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (FlickrException e) {
                     e.printStackTrace();
-                    callback.onError(e);
+                    uiSync(callback,e,NeedSync.ERROR);
                 }
             }
         }).start();
     }
 
-    public static  void getPhotoSizes(final Callback callback, final String photoId){
+
+    /**
+     * Este é o unico metodo necessário para ficar sync com a UI para Já
+     * @param callback
+     * @param photoId
+     */
+    public  static  void getPhotoSizes(final Callback callback, final String photoId){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Flickr f = FlickrHelper.of().getFlickerAuthed();
-                    List<Size> sizes = (List<Size>) f.getPhotosInterface().getSizes(photoId);
-                    callback.onResponse(sizes);
+                     List<Size> sizes = (List<Size>) f.getPhotosInterface().getSizes(photoId);
+                        uiSync(callback,sizes,NeedSync.OK);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
                     e.printStackTrace();
-                } catch (FlickrException e) {
+                } catch (final FlickrException e) {
                     e.printStackTrace();
-                    callback.onError(e);
+                    uiSync(callback,e,NeedSync.ERROR);
                 }
             }
         }).start();
     }
-    public static  void getLockingPhotoSizes(final Callback callback, final String photoId){
 
-                try {
-                    Flickr f = FlickrHelper.of().getFlickerAuthed();
-                    List<Size> sizes = (List<Size>) f.getPhotosInterface().getSizes(photoId);
-                    callback.onResponse(sizes);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (FlickrException e) {
-                    e.printStackTrace();
-                    callback.onError(e);
+    /**
+     * Sync resposta com a ui
+     * @param c
+     * @param response
+     * @param type
+     */
+    private static void uiSync(final Callback c, final Object response, final NeedSync type){
+        MAIN_THREAD.post(new Runnable() {
+            @Override
+            public void run() {
+                switch (type){
+                    case OK:{
+                        c.onResponse(response);
+                        break;
+                    }
                 }
+            }
+        });
     }
 
 
-
-
+    private enum NeedSync{
+        OK, ERROR
+    }
 
     public interface Callback<T>{
         public void onResponse(T response);

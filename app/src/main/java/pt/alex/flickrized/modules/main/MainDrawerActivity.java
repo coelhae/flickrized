@@ -173,13 +173,13 @@ public class MainDrawerActivity extends AppCompatActivity
     }
 
     private void  updatePhotoList(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
                 wallAdapter.setPhotos(photos);
                 wallAdapter.notifyDataSetChanged();
-            }
-        });
+//            }
+//        });
     }
 
     /***********************************/
@@ -190,9 +190,7 @@ public class MainDrawerActivity extends AppCompatActivity
      * Se houver tempo coloco de forma mais generica para centralizar o handler
      */
     public void loadUserData(){
-        Dispatcher.call(new Runnable() {
-            @Override
-            public void run() {
+
                 Dispatcher.getUserByUserName(new Dispatcher.Callback<com.googlecode.flickrjandroid.people.User>() {
                     @Override
                     public void onResponse(com.googlecode.flickrjandroid.people.User response) {
@@ -207,16 +205,10 @@ public class MainDrawerActivity extends AppCompatActivity
 
                     }
                 });
-
-
-            }
-        });
     }
 
     public void loadGetPublicPhoto(final String searchUser , final int pageNumber){
-        Dispatcher.call(new Runnable() {
-            @Override
-            public void run() {
+
                 Dispatcher.getPublicPhotos(new Dispatcher.Callback<PhotoList>() {
                     @Override
                     public void onResponse(PhotoList response) {
@@ -239,8 +231,7 @@ public class MainDrawerActivity extends AppCompatActivity
 
                     }
                 }, searchUser, 20,pageNumber); // tocar por variaveis
-            }
-        });
+
     }
 
 
@@ -250,9 +241,9 @@ public class MainDrawerActivity extends AppCompatActivity
      * @param pId
      */
     public void getPhotoSize(final Photo p){
-       Dispatcher.call(new Runnable() {
-                @Override
-                public void run() {
+//       Dispatcher.call(new Runnable() {
+//                @Override
+//                public void run() {
                     Dispatcher.getPhotoSizes(new Dispatcher.Callback<List<Size>>() {
 
                         @Override
@@ -266,17 +257,15 @@ public class MainDrawerActivity extends AppCompatActivity
 
                         }
                     }, p.getId());
-                }
-            });
+//                }
+//            });
     }
 
 
 
 
     public void getPhotoInfo(final Photo ph){
-        Dispatcher.call(new Runnable() {
-            @Override
-            public void run() {
+
                 Dispatcher.getPhotoGetInfo(new Dispatcher.Callback() {
                     @Override
                     public void onResponse(Object response) {
@@ -288,8 +277,8 @@ public class MainDrawerActivity extends AppCompatActivity
 
                     }
                 }, ph.getId());
-            }
-        });
+
+
     }
 
 
