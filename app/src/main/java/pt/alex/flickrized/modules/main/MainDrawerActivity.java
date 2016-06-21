@@ -47,39 +47,46 @@ public class MainDrawerActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_drawer);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        // init reclicler View
-        cardList = (RecyclerView) findViewById(R.id.flickr_card_list);
-        cardList.setHasFixedSize(true);
-
-        // init wall
-        stagLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-        /***
-         * Todo: add calc method, para tab e phone
+        /** para aumentar performace
+         * deveria colocar cache nos pedidos
          */
+        if(savedInstanceState == null) {
+            setContentView(R.layout.activity_main_drawer);
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
 
-        cardList.setLayoutManager(stagLayoutManager);
+            // init reclicler View
+            cardList = (RecyclerView) findViewById(R.id.flickr_card_list);
+            cardList.setHasFixedSize(true);
 
-        wallAdapter = new WallReciclerViewAdapter(this, cardClickListner);
-        cardList.setAdapter(wallAdapter);
-        // continua a carregar casso chegue lá baixo
-        wallAdapter.setEndlessListener(scroolListener);
+            // init wall
+            // o numero de colunas está defindo nos resources nas pastas de accordo com os tamanhos minimo disponivel sw
+            stagLayoutManager = new StaggeredGridLayoutManager(getResources().getInteger(R.integer.number_of_rows), StaggeredGridLayoutManager.VERTICAL);
+            /***
+             * Todo: add calc method, para tab e phone
+             */
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+            cardList.setLayoutManager(stagLayoutManager);
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+            wallAdapter = new WallReciclerViewAdapter(this, cardClickListner);
+            cardList.setAdapter(wallAdapter);
+            // continua a carregar casso chegue lá baixo
+            wallAdapter.setEndlessListener(scroolListener);
 
-        // start Load of flickr data
-        // TODO testing
-        loadUserData();
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
+
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(this);
+
+            // start Load of flickr data
+            // TODO testing
+            loadUserData();
+        }
     }
 
 
@@ -172,14 +179,10 @@ public class MainDrawerActivity extends AppCompatActivity
         return true;
     }
 
-    private void  updatePhotoList(){
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
+    private void  updatePhotoList(int i){
                 wallAdapter.setPhotos(photos);
                 wallAdapter.notifyDataSetChanged();
-//            }
-//        });
+//                wallAdapter.notifyItemChanged(i);
     }
 
     /***********************************/
@@ -221,10 +224,10 @@ public class MainDrawerActivity extends AppCompatActivity
                         }else{
 
                             photos.addAll(response);
-                            for(Photo p : photos)
-                                    getPhotoSize(p);
+                            updatePhotoList(0);
+                            }
 
-                        }
+
                     }
                     @Override
                     public void onError(FlickrException response) {
@@ -240,16 +243,13 @@ public class MainDrawerActivity extends AppCompatActivity
      * todo : refactor
      * @param pId
      */
-    public void getPhotoSize(final Photo p){
-//       Dispatcher.call(new Runnable() {
-//                @Override
-//                public void run() {
-                    Dispatcher.getPhotoSizes(new Dispatcher.Callback<List<Size>>() {
 
+    public void getPhotoSize(final Photo p){
+                    Dispatcher.getPhotoSizes(new Dispatcher.Callback<List<Size>>() {
                         @Override
                         public void onResponse(List<Size> response) {
                             p.setSizes(response);
-                            updatePhotoList();
+                            updatePhotoList(0);
                         }
 
                         @Override
@@ -257,15 +257,12 @@ public class MainDrawerActivity extends AppCompatActivity
 
                         }
                     }, p.getId());
-//                }
-//            });
     }
 
 
 
 
     public void getPhotoInfo(final Photo ph){
-
                 Dispatcher.getPhotoGetInfo(new Dispatcher.Callback() {
                     @Override
                     public void onResponse(Object response) {

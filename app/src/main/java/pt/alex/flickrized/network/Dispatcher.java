@@ -67,7 +67,16 @@ public class Dispatcher {
                 try {
                     Flickr f = FlickrHelper.of().getFlickerAuthed();
                     PhotoList publicPhotos = f.getPeopleInterface().getPublicPhotos(userId, perPage, page);
-                    callback.onResponse(publicPhotos);
+                    /***
+                     * improve load performace, apenas retorna quando tiver os tamanhos disponiveis
+                     */
+                    for(Photo p : publicPhotos) {
+                        List<Size> sizes = (List<Size>) f.getPhotosInterface().getSizes(p.getId());
+                        p.setSizes(sizes);
+                    }
+
+                    uiSync(callback,publicPhotos,NeedSync.OK);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
@@ -88,7 +97,8 @@ public class Dispatcher {
                 try {
                     Flickr f = FlickrHelper.of().getFlickerAuthed();
                     Photo info = f.getPhotosInterface().getInfo(photoId, null);
-                    callback.onResponse(info);
+
+
                     uiSync(callback,info,NeedSync.OK);
 
                 } catch (IOException e) {
@@ -102,6 +112,7 @@ public class Dispatcher {
             }
         }).start();
     }
+
 
 
     /**

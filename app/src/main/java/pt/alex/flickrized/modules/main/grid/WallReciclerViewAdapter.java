@@ -1,6 +1,7 @@
 package pt.alex.flickrized.modules.main.grid;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,7 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.googlecode.flickrjandroid.photos.PhotoList;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
 
 import pt.alex.flickrized.R;
 
@@ -21,6 +25,8 @@ public class WallReciclerViewAdapter extends RecyclerView.Adapter<WallViewHolder
 
     private Context ctx;
     private PhotoList photos;
+
+    private Bitmap[] preFetchedList;
 
     ContinuumScrollListener scroolListener;
     ItemClickListner clickListner;
@@ -53,7 +59,7 @@ public class WallReciclerViewAdapter extends RecyclerView.Adapter<WallViewHolder
     }
 
     @Override
-    public void onBindViewHolder(WallViewHolder holder, final int position) {
+    public void onBindViewHolder(final WallViewHolder holder, final int position) {
 
 
         holder.username.setText(photos.get(position).getOwner().getUsername());
@@ -70,7 +76,7 @@ public class WallReciclerViewAdapter extends RecyclerView.Adapter<WallViewHolder
 
             holder.thumb.getLayoutParams().height=photos.get(position).getLargeSize().getHeight();
 
-            Picasso.with(ctx).load(photos.get(position).getMedium800Url())
+            Picasso.with(ctx).load(photos.get(position).getSmall320Url())
                 .into(holder.thumb);
         }
 
@@ -83,7 +89,10 @@ public class WallReciclerViewAdapter extends RecyclerView.Adapter<WallViewHolder
 
     }
 
-
+    @Override
+    public void onViewRecycled(WallViewHolder holder) {
+        super.onViewRecycled(holder);
+    }
 
     @Override
     public int getItemCount() {

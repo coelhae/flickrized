@@ -3,6 +3,7 @@ package pt.alex.flickrized.aplication;
 import android.app.Application;
 import android.content.Context;
 
+import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Response;
@@ -10,6 +11,7 @@ import com.squareup.picasso.LruCache;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -29,24 +31,12 @@ public class FlickApplication extends Application {
         // vamos iniciar um context a apontar para a nossa Aplication class
         ctx = this;
 
-
-
-        // a testar caches
-        OkHttpClient okHttpClient = new OkHttpClient();
-        okHttpClient.networkInterceptors().add(new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Response originalResponse = chain.proceed(chain.request());
-                return originalResponse.newBuilder().header("Cache-Control", "max-age=" + (60 * 60 * 24 * 365)).build();
-            }
-        });
-
         Picasso.Builder builder = new  Picasso.Builder(this);
-        builder.downloader(new OkHttpDownloader(this, Integer.MAX_VALUE));
-        builder.memoryCache(new LruCache(24000));
+        builder.memoryCache(new LruCache(this));
         Picasso picasso =  builder.build();
         picasso.setIndicatorsEnabled(true);
         picasso.setLoggingEnabled(true);
+
         Picasso.setSingletonInstance(picasso);
 
     }
