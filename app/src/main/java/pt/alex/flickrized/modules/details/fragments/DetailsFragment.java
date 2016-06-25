@@ -37,6 +37,7 @@ public class DetailsFragment extends Fragment {
     private ActivityDetails acitvity;
 
     private PhotoViewAttacher attacher;
+    private View infoButton;
 
 
     public  DetailsFragment() {
@@ -49,6 +50,8 @@ public class DetailsFragment extends Fragment {
         Bundle b = new Bundle(1);
         b.putInt(POSITION, pos);
         df.setArguments(b);
+
+
         return df;
     }
 
@@ -57,13 +60,14 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
         position = getArguments().getInt(POSITION);
         Log.w("Create Pos :" ,position+"");
 
         fView = inflater.inflate(R.layout.details_fragment,container,false);
         viewHocks();
         initDetailsViews();
+        setupListeners();
+
 
         return fView;
     }
@@ -71,6 +75,7 @@ public class DetailsFragment extends Fragment {
     private void viewHocks() {
         lbName = (TextView)fView.findViewById(R.id.lb_photo_name);
         itemImage = (AppCompatImageView) fView.findViewById(R.id.item_image);
+        infoButton = fView.findViewById(R.id.bt_info);
     }
 
     private void initDetailsViews() {
@@ -90,7 +95,16 @@ public class DetailsFragment extends Fragment {
             }
         });
 
+    }
 
+
+    private void setupListeners(){
+        infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                acitvity.loadDetails(position);
+            }
+        });
     }
 
     @Override

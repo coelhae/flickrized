@@ -1,6 +1,7 @@
 package pt.alex.flickrized.modules.main;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,8 +14,14 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.googlecode.flickrjandroid.FlickrException;
+import com.googlecode.flickrjandroid.people.User;
 import com.googlecode.flickrjandroid.photos.Photo;
 import com.googlecode.flickrjandroid.photos.PhotoList;
 import com.googlecode.flickrjandroid.photos.Size;
@@ -30,7 +37,7 @@ import pt.alex.flickrized.network.Dispatcher;
 public class MainDrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private  int page = 1;
+    private int page = 1;
 
     RecyclerView cardList;
     StaggeredGridLayoutManager stagLayoutManager;
@@ -39,7 +46,12 @@ public class MainDrawerActivity extends AppCompatActivity
     private String searchUserId;
 
 
-
+    private ViewGroup progressBar;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +60,7 @@ public class MainDrawerActivity extends AppCompatActivity
         /** para aumentar performace
          * deveria colocar cache nos pedidos
          */
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             setContentView(R.layout.activity_main_drawer);
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
@@ -57,12 +69,12 @@ public class MainDrawerActivity extends AppCompatActivity
             cardList = (RecyclerView) findViewById(R.id.flickr_card_list);
             cardList.setHasFixedSize(true);
 
+
+            progressBar = (ViewGroup) findViewById(R.id.progressbar_container);
+
             // init wall
             // o numero de colunas está defindo nos resources nas pastas de accordo com os tamanhos minimo disponivel sw
             stagLayoutManager = new StaggeredGridLayoutManager(getResources().getInteger(R.integer.number_of_rows), StaggeredGridLayoutManager.VERTICAL);
-            /***
-             * Todo: add calc method, para tab e phone
-             */
 
             cardList.setLayoutManager(stagLayoutManager);
 
@@ -84,6 +96,9 @@ public class MainDrawerActivity extends AppCompatActivity
             // TODO testing
             loadUserData();
         }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
 
@@ -97,7 +112,7 @@ public class MainDrawerActivity extends AppCompatActivity
 //            increase page number
             page++;
             loadGetPublicPhoto(searchUserId, page);
-             return true;
+            return true;
         }
     };
 
@@ -108,11 +123,11 @@ public class MainDrawerActivity extends AppCompatActivity
     private WallReciclerViewAdapter.ItemClickListner cardClickListner = new WallReciclerViewAdapter.ItemClickListner() {
         @Override
         public void onItemClick(int position) {
-            goToDetailAcitivty( position);
+            goToDetailAcitivty(position);
         }
     };
 
-    private void goToDetailAcitivty(int pressedIndex){
+    private void goToDetailAcitivty(int pressedIndex) {
         Intent i = new Intent(this, ActivityDetails.class);
         i.putExtra("POS", pressedIndex);
         //TODO: passar o indice do cartão carregado para contextualizar
@@ -160,16 +175,6 @@ public class MainDrawerActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -177,9 +182,9 @@ public class MainDrawerActivity extends AppCompatActivity
         return true;
     }
 
-    private void  updatePhotoList(int i){
-                wallAdapter.setPhotos(DataHelper.of().getPhotos());
-                wallAdapter.notifyDataSetChanged();
+    private void updatePhotoList(int i) {
+        wallAdapter.setPhotos(DataHelper.of().getPhotos());
+        wallAdapter.notifyDataSetChanged();
 //                wallAdapter.notifyItemChanged(i);
     }
 
@@ -190,93 +195,87 @@ public class MainDrawerActivity extends AppCompatActivity
      * optei por nao meter asyncs
      * Se houver tempo coloco de forma mais generica para centralizar o handler
      */
-    public void loadUserData(){
+    public void loadUserData() {
+        showProgress();
+        Dispatcher.getUserByUserName(new Dispatcher.Callback<User>() {
+            @Override
+            public void onResponse(User response) {
+                hideProgress();
+                searchUserId = response.getId();
+                loadGetPublicPhoto(response.getId(), page);
 
-                Dispatcher.getUserByUserName(new Dispatcher.Callback<com.googlecode.flickrjandroid.people.User>() {
-                    @Override
-                    public void onResponse(com.googlecode.flickrjandroid.people.User response) {
+            }
 
-                        searchUserId = response.getId();
-                        loadGetPublicPhoto(response.getId(),page);
-                        Log.d("kasdkj",response.toString());
-                    }
-
-                    @Override
-                    public void onError(FlickrException response) {
-
-                    }
-                });
+            @Override
+            public void onError(FlickrException response) {
+                //TODO:
+                hideProgress();
+            }
+        });
     }
 
-    public void loadGetPublicPhoto(final String searchUser , final int pageNumber){
+    public void loadGetPublicPhoto(final String searchUser, final int pageNumber) {
+        showProgress();
+        Dispatcher.getPublicPhotos(new Dispatcher.Callback<PhotoList>() {
+            @Override
+            public void onResponse(PhotoList response) {
+                hideProgress();
+                /**
+                 * pelo sim pelo nao
+                 */
+                if (response != null && response.size() == 0) {
+                    // TODO : adicionar uma msg de erro
+                    // para desenrascar meter um toast
+                } else {
+                    // update list
+                    DataHelper.of().getPhotos().addAll(response);
+                    updatePhotoList(0);
+                }
 
-                Dispatcher.getPublicPhotos(new Dispatcher.Callback<PhotoList>() {
-                    @Override
-                    public void onResponse(PhotoList response) {
-                        /**
-                         * pelo sim pelo nao
-                         */
-                        if(response!= null && response.size() ==0){
-                            // TODO : adicionar uma msg de erro
-                            // para desenrascar meter um toast
-                        }else{
-                            // update list
-                            DataHelper.of().getPhotos().addAll(response);
-                            updatePhotoList(0);
-                            }
 
+            }
 
-                    }
-                    @Override
-                    public void onError(FlickrException response) {
-
-                    }
-                }, searchUser, 20,pageNumber); // tocar por variaveis
+            @Override
+            public void onError(FlickrException response) {
+                //TODO:
+                hideProgress();
+            }
+        }, searchUser, 20, pageNumber); // tocar por variaveis
 
     }
 
 
     /**
-     *
      * todo : refactor
+     *
      * @param p
      */
 
-    public void getPhotoSize(final Photo p){
-                    Dispatcher.getPhotoSizes(new Dispatcher.Callback<List<Size>>() {
-                        @Override
-                        public void onResponse(List<Size> response) {
-                            p.setSizes(response);
-                            updatePhotoList(0);
+    public void getPhotoSize(final Photo p) {
+        Dispatcher.getPhotoSizes(new Dispatcher.Callback<List<Size>>() {
+            @Override
+            public void onResponse(List<Size> response) {
+                p.setSizes(response);
+                updatePhotoList(0);
 
-                        }
+            }
 
-                        @Override
-                        public void onError(FlickrException response) {
+            @Override
+            public void onError(FlickrException response) {
 
-                        }
-                    }, p.getId());
+            }
+        }, p.getId());
     }
 
 
-
-
-    public void getPhotoInfo(final Photo ph){
-                Dispatcher.getPhotoGetInfo(new Dispatcher.Callback() {
-                    @Override
-                    public void onResponse(Object response) {
-                        Log.d("grp", response.toString());
-                    }
-
-                    @Override
-                    public void onError(FlickrException response) {
-
-                    }
-                }, ph.getId());
-
-
+    private void showProgress() {
+        if(progressBar.getVisibility() == View.GONE){
+            progressBar.setVisibility(View.VISIBLE);
+        }
     }
-
+    private void hideProgress(){
+        progressBar.setVisibility(View.GONE);
+    }
 
 
 }
