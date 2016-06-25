@@ -3,13 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/MainBackground"
     tools:context="pt.alex.flickrized.modules.details.ActivityDetails">
 
-    <android.support.v4.view.ViewPager
+    <pt.alex.flickrized.modules.common.HackyViewPager
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    </android.support.v4.view.ViewPager>
+    </pt.alex.flickrized.modules.common.HackyViewPager>
 
+
+    <FrameLayout
+        android:id="@+id/description_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"></FrameLayout>
 </RelativeLayout>

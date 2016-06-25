@@ -7,20 +7,26 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/bg1"
     tools:context=".modules.login.LoginActivity">
 
     <TextView
+        style="@style/LoginTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bem vindo ao flickr" />
+        android:layout_centerHorizontal="true"
+        android:text="@string/login_title" />
 
     <Button
         android:id="@+id/bt_login"
         style="@style/Theme.AppCompat.Light"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
         android:text="@string/bt_login"
+        android:textColor="#ffffff"
+        android:background="@drawable/login_button_state"
         android:layout_centerInParent="true"
+        android:textSize="20dp"
         />
 
 </RelativeLayout>

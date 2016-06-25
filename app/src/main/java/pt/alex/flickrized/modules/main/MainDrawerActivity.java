@@ -22,6 +22,7 @@ import com.googlecode.flickrjandroid.photos.Size;
 import java.util.List;
 
 import pt.alex.flickrized.R;
+import pt.alex.flickrized.data.DataHelper;
 import pt.alex.flickrized.modules.details.ActivityDetails;
 import pt.alex.flickrized.modules.main.grid.WallReciclerViewAdapter;
 import pt.alex.flickrized.network.Dispatcher;
@@ -29,15 +30,11 @@ import pt.alex.flickrized.network.Dispatcher;
 public class MainDrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private PhotoList photos = new PhotoList();
-
-
     private  int page = 1;
 
     RecyclerView cardList;
     StaggeredGridLayoutManager stagLayoutManager;
     WallReciclerViewAdapter wallAdapter;
-
 
     private String searchUserId;
 
@@ -117,6 +114,7 @@ public class MainDrawerActivity extends AppCompatActivity
 
     private void goToDetailAcitivty(int pressedIndex){
         Intent i = new Intent(this, ActivityDetails.class);
+        i.putExtra("POS", pressedIndex);
         //TODO: passar o indice do cartão carregado para contextualizar
         startActivity(i);
     }
@@ -180,7 +178,7 @@ public class MainDrawerActivity extends AppCompatActivity
     }
 
     private void  updatePhotoList(int i){
-                wallAdapter.setPhotos(photos);
+                wallAdapter.setPhotos(DataHelper.of().getPhotos());
                 wallAdapter.notifyDataSetChanged();
 //                wallAdapter.notifyItemChanged(i);
     }
@@ -222,8 +220,8 @@ public class MainDrawerActivity extends AppCompatActivity
                             // TODO : adicionar uma msg de erro
                             // para desenrascar meter um toast
                         }else{
-
-                            photos.addAll(response);
+                            // update list
+                            DataHelper.of().getPhotos().addAll(response);
                             updatePhotoList(0);
                             }
 
@@ -239,9 +237,9 @@ public class MainDrawerActivity extends AppCompatActivity
 
 
     /**
-     * devia estar numa pool de threads
+     *
      * todo : refactor
-     * @param pId
+     * @param p
      */
 
     public void getPhotoSize(final Photo p){
@@ -250,6 +248,7 @@ public class MainDrawerActivity extends AppCompatActivity
                         public void onResponse(List<Size> response) {
                             p.setSizes(response);
                             updatePhotoList(0);
+
                         }
 
                         @Override

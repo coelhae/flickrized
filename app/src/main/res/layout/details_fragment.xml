@@ -3,9 +3,31 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
 
 
+
+
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/item_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="@dimen/icon_width"
+        android:layout_height="@dimen/icon_height"
+        android:src="@drawable/info_48_b"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:layout_alignParentRight="true"
+        android:layout_margin="16dp"
+        android:clickable="true"/>
+
     <TextView
+        android:id="@+id/lb_photo_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+
         android:text="fragm 112w12"/>
+
+
 
 </RelativeLayout>
