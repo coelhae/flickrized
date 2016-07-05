@@ -25,7 +25,7 @@ public class Dispatcher {
 
 
 
-    private static final Handler MAIN_THREAD = new Handler();
+    private static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
 
     private  Dispatcher() {
     }
@@ -39,7 +39,7 @@ public class Dispatcher {
 
 
     public static  void getUserByUserName(final Callback callback){
-            new Thread(new Runnable() {
+            ExecuterDispatcher.of().dispatch(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -56,12 +56,13 @@ public class Dispatcher {
                         uiSync(callback,e,NeedSync.ERROR);
                     }
                 }
-            }).start();
+            }
+            );
         }
 
 
     public static  void getPublicPhotos(final Callback callback, final String userId, final int perPage,final int page ){
-        new Thread(new Runnable() {
+        ExecuterDispatcher.of().dispatch(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -86,12 +87,12 @@ public class Dispatcher {
                     uiSync(callback,e,NeedSync.ERROR);
                 }
             }
-        }).start();
+        });
     }
 
 
     public static  void getPhotoGetInfo(final Callback callback, final String photoId){
-        new Thread(new Runnable() {
+        ExecuterDispatcher.of().dispatch(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -110,7 +111,7 @@ public class Dispatcher {
                     uiSync(callback,e,NeedSync.ERROR);
                 }
             }
-        }).start();
+        });
     }
 
 
@@ -121,7 +122,7 @@ public class Dispatcher {
      * @param photoId
      */
     public  static  void getPhotoSizes(final Callback callback, final String photoId){
-        new Thread(new Runnable() {
+        ExecuterDispatcher.of().dispatch(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -138,7 +139,7 @@ public class Dispatcher {
                     uiSync(callback,e,NeedSync.ERROR);
                 }
             }
-        }).start();
+        });
     }
 
     /**
